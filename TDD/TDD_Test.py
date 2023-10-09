@@ -2,7 +2,7 @@ import numpy as np
 import copy
 import time
 import random
-from TDD.ComplexTable import *
+from tddfork.TDD.ComplexTable import *
 
 """Define global variables"""
 computed_table = dict()

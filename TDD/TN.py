@@ -1,5 +1,5 @@
 import numpy as np
-from TDD.TDD import Index,get_tdd,get_identity_tdd,cont
+from tddfork.TDD.TDD import Index,get_tdd,get_identity_tdd,cont
 import networkx as nx
 from networkx.algorithms.approximation.treewidth import treewidth_min_degree,treewidth_min_fill_in
 
