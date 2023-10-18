@@ -1,5 +1,5 @@
 import numpy as np
-from tddfork.TDD.TN import Index,Tensor,TensorNetwork
+from tddpure.TDD.TN import Index,Tensor,TensorNetwork
 from qiskit.quantum_info.operators import Operator
 import time
 
