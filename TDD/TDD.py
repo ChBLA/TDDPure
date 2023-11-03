@@ -3,6 +3,8 @@ import copy
 import time
 import random
 from tddpure.TDD.ComplexTable import *
+import os
+import math
 
 """Define global variables"""
 computed_table = dict()
@@ -270,6 +272,8 @@ def get_index_order():
     
 def get_int_key(weight):
     """To transform a complex number to a tuple with int values"""
+    if math.isnan(int(weight.r.val*epi_inv)) or math.isnan(int(weight.i.val*epi_inv)):
+        print(weight.r.val, weight.i.val)
     return (int(weight.r.val*epi_inv) ,int(weight.i.val*epi_inv))
 
 def get_node_set(node,node_set=set()):
@@ -622,7 +626,7 @@ class new_key_node:
         
     def __eq__(self,other):
         if self.level==other.level and self.new_key==other.new_key:
-            return true
+            return True
         else:
             return False
         
@@ -683,6 +687,8 @@ def cont(tdd1,tdd2):
     key_2_new_key2 = key_2_new_key_tree_header
     new_key_2_index = dict()
 
+    repeated_intermediate = 0
+
     while k1 < m1 or k2 < m2 :
         if k1 == m1: 
             for k2 in range(k2,m2):
@@ -700,23 +706,28 @@ def cont(tdd1,tdd2):
         if global_index_order[tdd1.key_2_index[k1]] < global_index_order[tdd2.key_2_index[k2]]:
             key_2_new_key1 = key_2_new_key1.append_new_key(new_key)
             new_key_2_index[new_key]=tdd1.key_2_index[k1]
+            repeated_intermediate+=1
             new_key+=1
             k1+=1
         elif global_index_order[tdd1.key_2_index[k1]] > global_index_order[tdd2.key_2_index[k2]]:
             key_2_new_key2 = key_2_new_key2.append_new_key(new_key)
             new_key_2_index[new_key]=tdd2.key_2_index[k2]
+            repeated_intermediate+=1
             new_key+=1
             k2+=1
         elif tdd1.key_2_index[k1] in var_out_name:
             key_2_new_key1 = key_2_new_key1.append_new_key(new_key)
             key_2_new_key2 = key_2_new_key2.append_new_key(new_key)
             new_key_2_index[new_key]=tdd1.key_2_index[k1]
+            repeated_intermediate+=1
             new_key+=1
             k1+=1
             k2+=1
         else:
-            key_2_new_key1 = key_2_new_key1.append_new_key(new_key-0.5)
-            key_2_new_key2 = key_2_new_key2.append_new_key(new_key-0.5)
+            new_intermediate_key = new_key - 1 + ((repeated_intermediate + 1) * 0.001)
+            key_2_new_key1 = key_2_new_key1.append_new_key(new_intermediate_key)
+            key_2_new_key2 = key_2_new_key2.append_new_key(new_intermediate_key) 
+            repeated_intermediate+=1
             k1+=1
             k2+=1
     
@@ -741,7 +752,7 @@ def contract(tdd1,tdd2,key_2_new_key1,key_2_new_key2,cont_num):
     """The contraction of two TDDs, var_cont is in the form [[4,1],[3,2]]"""
     global cont_times
     cont_times+=1
-    
+    cont_times_on_entry = cont_times
     
 #     print(tdd1.weight,tdd1.node.key,tdd2.weight,tdd2.node.key,cont_num)
     
@@ -753,6 +764,7 @@ def contract(tdd1,tdd2,key_2_new_key1,key_2_new_key2,cont_num):
     if w1== cn0 or w2==cn0:
         return TDD(terminal_node,cn0)    
     
+    # Trivial case
     if k1==-1 and k2==-1:
         tdd=TDD(terminal_node,cn_mulCached(w1,w2))
         if cont_num>0:
@@ -828,10 +840,17 @@ def contract(tdd1,tdd2,key_2_new_key1,key_2_new_key2,cont_num):
             tdd=normalize(new_key1,the_successors,True)
         else:
             tdd=TDD(terminal_node,cn0)
+            # if cont_times_on_entry in [75, 78, 82, 85]:
+            #     tdd1.show(real_label=False,name=os.path.join("current_case",f"{cont_times_on_entry}_tdd1"))
+            #     tdd2.show(real_label=False,name=os.path.join("current_case",f"{cont_times_on_entry}_tdd2"))
             for k in range(tdd1.node.succ_num):
                 e1 = TDD(tdd1.node.succ[k],tdd1.node.out_weight[k])
                 e2 = TDD(tdd2.node.succ[k],tdd2.node.out_weight[k])                
-                res=contract(e1,e2,key_2_new_key1.father,key_2_new_key2.father,cont_num-1)           
+                res=contract(e1,e2,key_2_new_key1.father,key_2_new_key2.father,cont_num-1)
+                # if cont_times_on_entry in [75, 78, 82, 85]:
+                #     e1.show(real_label=False,name=os.path.join("current_case",f"{cont_times_on_entry}_e1_k{k}"))
+                #     e2.show(real_label=False,name=os.path.join("current_case",f"{cont_times_on_entry}_e2_k{k}"))
+                #     res.show(real_label=False,name=os.path.join("current_case",f"{cont_times_on_entry}_res_k{k}"))    
                 if tdd.weight==cn0:
                     tdd=res
                 elif res.weight != cn0:
@@ -873,6 +892,8 @@ def contract(tdd1,tdd2,key_2_new_key1,key_2_new_key2,cont_num):
         if equalsZero(tdd.weight):
             releaseCached(tdd.weight)
             return TDD(terminal_node,cn0)
+    #tdd.show(real_label=False, name=os.path.join("debug_images", f"contract_{cont_times_on_entry}"))
+
     return tdd
     
 def Slicing(tdd,x,c):
@@ -926,14 +947,14 @@ def add(tdd1,tdd2):
     k1=tdd1.node.key
     k2=tdd2.node.key
 #     print('add 1078',k1,k2,tdd1.weight,tdd2.weight)
-    if tdd1.weight==cn0:
-        if tdd2.weight==cn0:
+    if tdd1.weight==cn0 or equalsZero(tdd1.weight):
+        if tdd2.weight==cn0 or equalsZero(tdd2.weight):
             return TDD(terminal_node,cn0)
         else:
             res = TDD(tdd2.node,getCachedComplex2(tdd2.weight.r.val,tdd2.weight.i.val))
             return res        
     
-    if tdd2.weight == cn0:
+    if tdd2.weight == cn0 or equalsZero(tdd2.weight):
         res = TDD(tdd1.node,getCachedComplex2(tdd1.weight.r.val,tdd1.weight.i.val))
         return res
     
