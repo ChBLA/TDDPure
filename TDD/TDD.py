@@ -64,6 +64,7 @@ class TDD:
         self.node = node
         self.index_set = None #suppose to be a list or set
         self.key_2_index = None #suppose to be a dict
+        self.gates = []
             
             
     def node_number(self):
@@ -76,6 +77,7 @@ class TDD:
         temp.weight = self.weight
         temp.index_set = copy.copy(self.index_set)
         temp.key_2_index=copy.copy(self.key_2_index)
+        temp.gates = copy.gates
         return temp
     
     def show(self,real_label=True,name='output'):
@@ -247,6 +249,7 @@ def get_identity_tdd():
     tdd = TDD(terminal_node,cn1)
     tdd.index_set = []
     tdd.key_2_index = {}
+    tdd.gates = ["I"]
     return tdd
 
 def get_unique_table():
@@ -745,6 +748,7 @@ def cont(tdd1,tdd2):
     
     tdd.index_set=var_out
     tdd.key_2_index = new_key_2_index
+    tdd.gates = tdd1.gates + tdd2.gates
     return tdd
     
 
